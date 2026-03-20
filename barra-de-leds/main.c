@@ -39,7 +39,7 @@ int bar_display(int val){
     gpio_put(LED5, val>=5);
 }
 
-void callback(unit gpio, unit32_t events){
+void callback(uint gpio, uint32_t events){
     /* 
     SEPARAR QUEM CHAMOU A INTERRUPÇÃO:
         1) Chave: atualizar a variável sw_state
