@@ -91,7 +91,7 @@ int main() {
 
     // configuração das interrupções
     gpio_set_irq_enabled_with_callback(BTN_PIN, GPIO_IRQ_EDGE_FALL, true, &callback);
-    gpio_set_irq_enabled_with_callback(SW_PIN, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(SW_PIN, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true, &callback);
 
 
     while (true) {
