@@ -22,7 +22,7 @@ volatile int passo_atual = 0;
 volatile int pontuacao = 0;
 
 typedef enum{
-    START,
+    START,   
     SHOW,
     PLAY
 } state_t;
