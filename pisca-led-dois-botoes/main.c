@@ -12,7 +12,9 @@ const int LED_PIN_G = 5;
 const int LED_PIN_Y = 9;
 const int LED_PIN_R = 13;
 
-volatile int btn_f = 0;
+volatile int btn_g_f = 0; //flag do botão verde
+volatile int btn_y_f = 0; // flag do botão amarelo
+
 volatile int g_timer_g = 0;
 volatile int g_timer_y = 0;
 volatile int g_timer_r = 0;
@@ -22,9 +24,12 @@ volatile int g_fired_y = 0;
 
 void btn_callback(uint gpio, uint32_t events) {
     if (events == 0x4) {  // fall edge
-        btn_f = gpio;
-    } else if (events == 0x8) {  // rise edge
-    }
+        if (gpio == btn_g_f){
+            btn_g_f = 1;
+        } else if (gpio == btn_y_f){
+            btn_y_f = 1;
+        }
+    } 
 }
 
 bool timer_g_callback(repeating_timer_t *rt) {
@@ -77,14 +82,10 @@ int main() {
     gpio_set_dir(LED_PIN_R, GPIO_OUT);
 
     repeating_timer_t timer_g;
-    if (!add_repeating_timer_ms(100, timer_g_callback, NULL, &timer_g)) {
-        printf("Failed to add timer\n");
-    }
+    add_repeating_timer_ms(100, timer_g_callback, NULL, &timer_g);
 
     repeating_timer_t timer_y;
-    if (!add_repeating_timer_ms(200, timer_y_callback, NULL, &timer_y)) {
-        printf("Failed to add timer\n");
-    }
+    add_repeating_timer_ms(250, timer_y_callback, NULL, &timer_y);
 
     int led_g = 0;
     int led_y = 0;
@@ -92,8 +93,8 @@ int main() {
     int alarm_enable_g = 0;
     int alarm_enable_y = 0;
 
-    alarm_id_t alarm_g = NULL;
-    alarm_id_t alarm_y = NULL;
+    alarm_id_t alarm_g = -1;
+    alarm_id_t alarm_y = -1;
 
     while (1) {
         if (g_timer_g && alarm_enable_g) {
@@ -112,30 +113,44 @@ int main() {
             gpio_put(LED_PIN_Y, 0);
         }
 
-        if (btn_f == BTN_PIN_G) {
+        if (btn_g_f == BTN_PIN_G) {
             if (alarm_enable_g == 0) {
                 alarm_g = add_alarm_in_ms(1000, alarm_g_callback, NULL, false);
                 alarm_enable_g = 1;
             }
-            btn_f = 0;
+            btn_g_f = 0;
         }
 
-        if (btn_f == BTN_PIN_Y) {
+        if (btn_y_f == BTN_PIN_Y) {
             if (alarm_enable_y == 0) {
                 alarm_y = add_alarm_in_ms(2000, alarm_y_callback, NULL, false);
                 alarm_enable_y = 1;
             }
-            btn_f = 0;
+            btn_y_f = 0;
         }
 
-        if (g_fired_g == 1 ||g_fired_y == 1 ) {
-            g_fired_g = 0;
-            alarm_enable_g = 0;
+        if (g_fired_g == 1) { // se o tempo do led verde acabou
+            g_fired_g = 0; // desativa a flag
+            alarm_enable_g = 0;  
+            gpio_put(LED_PIN_G, 0);  // apaga o led verde
 
+            if(alarm_enable_y==1){  // verifica se o amarelo está rodando para cancelar
+                alarm_enable_y = 0;
+                cancel_alarm(alarm_y);
+                gpio_put(LED_PIN_Y, 0);  // apaga o led verde
+            }
+        }
+
+        if (g_fired_y == 1) {
             g_fired_y = 0;
             alarm_enable_y = 0;
-            cancel_alarm(alarm_y);
-            cancel_alarm(alarm_g);
+            gpio_put(LED_PIN_Y, 0);
+
+            if(alarm_enable_g==1){
+                alarm_enable_g = 0;
+                cancel_alarm(alarm_g);
+                gpio_put(LED_PIN_G, 0);
+            }
         }
 
     }
