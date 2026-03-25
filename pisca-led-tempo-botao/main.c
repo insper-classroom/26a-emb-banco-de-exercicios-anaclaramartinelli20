@@ -83,7 +83,7 @@ int main() {
         } else if (new_time){
             new_time = false;
             if (led_counter>0){
-                add_repeating_timer_ms(-led_counter/2, timer_callback, NULL, &timer);
+                add_repeating_timer_ms(-led_counter, timer_callback, NULL, &timer);
                 active_timer = true;
             }
         }
