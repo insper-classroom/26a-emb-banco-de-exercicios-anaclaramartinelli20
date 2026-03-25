@@ -37,7 +37,6 @@ bool timer_callback(repeating_timer_t *rt){ // lê o estado atual do led e inver
 }
 
 void btn_callback(uint gpio, uint32_t events){
-    led_counter = 0;
     if (events == GPIO_IRQ_EDGE_FALL && gpio == BTN_PIN){
         start_ms = to_ms_since_boot(get_absolute_time());
         pressed_btn = true;
@@ -80,11 +79,11 @@ int main() {
                 active_timer = false;
             }
             gpio_put(LED_PIN, 0); // apaga o led se o botão estiver apertado 
-            
+
         } else if (new_time){
             new_time = false;
             if (led_counter>0){
-                ass_repeating_timer_ms(led_counter, timer_callback, NULL, &timer);
+                add_repeating_timer_ms(led_counter, timer_callback, NULL, &timer);
                 active_timer = true;
             }
         }
